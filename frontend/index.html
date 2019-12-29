@@ -19,7 +19,7 @@
             <form id="question-form" class="form">
                 <div class="form-element">
                     <label for="amount" class="form-label">Number of questions: </label>
-                    <input type="number" name="amount" id="input-amount" class="form-input" min=1 max=50 />
+                    <input type="number" name="amount" id="input-amount" class="form-input" min=1 max=50 value=1 />
                 </div>
                 <div class="form-element">
                     <label for="category" class="form-label">Category: </label>
@@ -83,7 +83,7 @@
                         </div> -->
                         <div class="question">
                             <div class="question-number small-heading">Question 1</div>
-                            <h3>Which of these games includes the phrase &quot;Do not pass Go, do not collect $200&quot;?</h3>
+                            <h3 id="question-text">Which of these games includes the phrase &quot;Do not pass Go, do not collect $200&quot;?</h3>
                         </div>
                         <div class="timer-container">
                             <span class="small-heading">Time remaining</span>
@@ -92,9 +92,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="answers">
+                    <div id="answers">
                         <div class="answer">1</div>
-                        <div class="answer">2</div>
                     </div>
                 </div>
 

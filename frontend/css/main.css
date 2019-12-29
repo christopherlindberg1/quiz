@@ -99,7 +99,7 @@ body {
 /* .question-number, */
 /* .question, */
 .timer-container,
-.timer {
+#timer {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -127,7 +127,7 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.timer {
+#timer {
     height: 75px;
     width: 75px;
     border-radius: 50%;
@@ -136,7 +136,7 @@ body {
     font-size: 2.25rem;
 }
 
-.answers {
+#answers {
     padding: 2rem 0;
     display: flex;
     justify-content: space-evenly;
@@ -148,6 +148,7 @@ body {
     width: 20%;
     padding: 1rem 0;
     cursor: pointer;
+    font-size: 1.2rem;
 }
 
 .answer:hover {

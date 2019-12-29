@@ -14,12 +14,13 @@ const inputType = document.getElementById("input-type");
 const formSection = document.getElementById("form-section");
 const questionSection = document.getElementById("question-section");
 
-
+const questionText = document.getElementById("question-text");
+const answersContainer = document.getElementById("answers");
 const timer = document.getElementById("timer");
 
 
 
-// console.log(timer);
+console.log(answers);
 
 
 class Init
@@ -32,28 +33,6 @@ class Init
 
 class Form
 {
-    // static toggleForm() {
-    //     if (form.style.display == "none") {
-    //         Form.showForm();
-    //     }
-    //     else if (form.style.display == "block") {
-    //         Form.HideForm();
-    //     }
-    //     else {
-    //         alert("toggle error");
-    //     }
-    // }
-
-    // static HideForm() {
-    //     form.style.display = "none";
-    //     formTogglerIcon.style.transform = "rotate(-90deg)";
-    // }
-
-    // static showForm() {
-    //     form.style.display = "block";
-    //     formTogglerIcon.style.transform = "rotate(90deg)";
-    // }
-
     static hideFormSection() {
         formSection.style.display = "none";
     }
@@ -97,9 +76,47 @@ class Game
         Form.hideFormSection();
         GameUI.showQuestionSection();
 
-        questions.forEach(question => {
-            console.log(question);
-        })
+        let questionIndex = 0;
+        const gameStats = {};
+
+        Game.presentQuestion(questions[questionIndex]);
+    }
+
+    static presentQuestion(question) {
+        console.log(question);
+
+        const answers = [question["correct_answer"], ...question["incorrect_answers"]];
+
+        // Randomize order of answers
+        answers.sort(function(a, b) {
+            return 0.5 - Math.random()
+        });
+
+        // console.log(answers);
+        Game.showQuestion(question); 
+        Game.showAlternativeAnswers(answers);  
+    }
+
+    static showQuestion(question) {
+        questionText.innerText = question["question"]; 
+    }
+
+    static showAlternativeAnswers(answers) {
+        answersContainer.innerHTML = "";
+
+        console.log(answers);
+
+        answers.forEach(answer => {
+            const answerDiv = document.createElement("div");
+            answerDiv.appendChild(document.createTextNode(answer));
+            answerDiv.classList.add("answer");
+            answersContainer.appendChild(answerDiv);
+            
+        });
+    }
+
+    static setTimer() {
+
     }
 }
 
@@ -114,17 +131,7 @@ class GameUI
         questionSection.style.display = "block";
     }
 
-    static prepareQuestion() {
-
-    }
-
-    static writeQuestion() {
-
-    }
-
-    static resetTimer() {
-
-    }
+    
 
 
 }

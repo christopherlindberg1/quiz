@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>The Quiz</title>
+
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <main class="container">
+        <h1 class="main-heading">The Quiz</h1>
+        <section id="form-section" class="section">
+            <div class="intro">
+                <p>Generate questions in the form below and play the interactive quiz game!</p>
+            </div>
+            <!-- <h2 id="form-toggler" class="secondary-heading toggler-control">Search qestions <span id="form-toggler-icon" class="toggler-icon">&#10094;</span></h2> -->
+            <form id="question-form" class="form">
+                <div class="form-element">
+                    <label for="amount" class="form-label">Number of questions: </label>
+                    <input type="number" name="amount" id="input-amount" class="form-input" min=1 max=50 />
+                </div>
+                <div class="form-element">
+                    <label for="category" class="form-label">Category: </label>
+                    <select name="category" id="input-category" class="form-input">
+                        <option value="any">Any Category</option>
+                        <option value="9">General Knowledge</option>
+                        <option value="10">Entertainment: Books</option>
+                        <option value="11">Entertainment: Film</option>
+                        <option value="12">Entertainment: Music</option>
+                        <option value="13">Entertainment: Musicals & Theatres</option>
+                        <option value="14">Entertainment: Television</option>
+                        <option value="15">Entertainment: Video Games</option>
+                        <option value="16">Entertainment: Board Games</option>
+                        <option value="17">Entertainment: Science & Nature</option>
+                        <option value="18">Entertainment: Science: Computers</option>
+                        <option value="19">Entertainment: Science: Mathematics</option>
+                        <option value="20">Entertainment: Mythology</option>
+                        <option value="21">Entertainment: Sports</option>
+                        <option value="22">Entertainment: Geography</option>
+                        <option value="29">Entertainment: Comics</option>
+                        <option value="31">Entertainment: Japanese Anime & Manga</option>
+                        <option value="32">Entertainment: Cartoons & Animations</option>
+                        <option value="23">History</option>
+                        <option value="24">Politics</option>
+                        <option value="25">Art</option>
+                        <option value="26">Celebrities</option>
+                        <option value="27">Aminals</option>
+                        <option value="28">Vehicles</option>
+                        <option value="30">Science: Gadgets</option>
+                    </select>
+                </div>
+                <div class="form-element">
+                    <label for="Difficulty" class="form-label">Difficulty: </label>
+                    <select name="difficulty" id="input-difficulty" class="form-input">
+                        <option value="any">Any Difficulty</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="form-element">
+                    <label for="type" class="form-label">Type: </label>
+                    <select name="type" id="input-type" class="form-input">
+                        <option value="any">Any Type</option>
+                        <option value="multiple">Multiple Choice</option>
+                        <option value="boolean">True / False</option>
+                    </select>
+                </div>
+                <div class="form-element">
+                    <button type="submit" class="form-input">Get questions</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="question-section" class="section">
+            <div class="questions">
+                <div class="question-card">
+                    <div class="question-information">
+                        <!-- <div class="question-number">
+                            Question 1
+                        </div> -->
+                        <div class="question">
+                            <div class="question-number small-heading">Question 1</div>
+                            <h3>Which of these games includes the phrase &quot;Do not pass Go, do not collect $200&quot;?</h3>
+                        </div>
+                        <div class="timer-container">
+                            <span class="small-heading">Time remaining</span>
+                            <div id="timer">
+                                60
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answers">
+                        <div class="answer">1</div>
+                        <div class="answer">2</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <script src="js/main.js"></script>
+</body>
+</html>

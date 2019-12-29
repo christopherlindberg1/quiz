@@ -1,6 +1,15 @@
 
-
+// Configuration variables
 const API_URL = "https://opentdb.com/api.php";
+const SECONDS_PER_QUESTION = 30;
+
+// Game variable
+const game = {
+    "colors" : {
+        "green" : "#0c0",
+        "red" : "#f22",
+    }
+}
 
 // UI elements
 const form = document.getElementById("question-form");
@@ -20,7 +29,7 @@ const timer = document.getElementById("timer");
 
 
 
-console.log(answers);
+// console.log(answers);
 
 
 class Init
@@ -77,13 +86,14 @@ class Game
         GameUI.showQuestionSection();
 
         let questionIndex = 0;
-        const gameStats = {};
 
         Game.presentQuestion(questions[questionIndex]);
     }
 
     static presentQuestion(question) {
         console.log(question);
+
+        let hasAnswered = false;
 
         const answers = [question["correct_answer"], ...question["incorrect_answers"]];
 
@@ -92,9 +102,27 @@ class Game
             return 0.5 - Math.random()
         });
 
-        // console.log(answers);
+        // Start qeustions
         Game.showQuestion(question); 
         Game.showAlternativeAnswers(answers);  
+        Game.startTimer();
+
+        answersContainer.addEventListener("click", e => {
+            if (e.target.classList.contains("answer")) {
+                if (hasAnswered == false) {
+                    const userChoice = e.target.innerText;
+                    if (userChoice == question["correct_answer"]) {
+                        e.target.style.border = `2px solid ${game["colors"]["green"]}`;
+                        e.target.style.backgroundColor = `${game["colors"]["green"]}`;
+                    }
+                    else {
+                        e.target.style.border = `2px solid ${game["colors"]["red"]}`;
+                        e.target.style.backgroundColor = `${game["colors"]["red"]}`;
+                    }
+                }
+                hasAnswered = true;
+            }
+        });
     }
 
     static showQuestion(question) {
@@ -103,20 +131,31 @@ class Game
 
     static showAlternativeAnswers(answers) {
         answersContainer.innerHTML = "";
-
-        console.log(answers);
-
+        //console.log(answers);
         answers.forEach(answer => {
             const answerDiv = document.createElement("div");
             answerDiv.appendChild(document.createTextNode(answer));
             answerDiv.classList.add("answer");
             answersContainer.appendChild(answerDiv);
-            
         });
     }
 
-    static setTimer() {
+    static startTimer() {
+        GameUI.makeTimerGreen();
 
+        let currentTime = SECONDS_PER_QUESTION;
+        timer.innerText = currentTime;
+
+        const refreshId = setInterval(() => {
+            currentTime--;
+            if (currentTime == 0) {
+                clearInterval(refreshId);
+            }
+            if (currentTime == 5) {
+                GameUI.makeTimerRed();
+            }
+            timer.innerText = currentTime;
+        }, 1000);
     }
 }
 
@@ -131,18 +170,15 @@ class GameUI
         questionSection.style.display = "block";
     }
 
-    
+    static makeTimerGreen() {
+        timer.style.border = `3px solid ${game["colors"]["green"]}`;
+        timer.style.backgroundColor = "#f4f4f4";
+    }
 
-
-}
-
-
-
-
-
-class Timer
-{
-
+    static makeTimerRed() {
+        timer.style.border = `3px solid ${game["colors"]["red"]}`;
+        timer.style.backgroundColor = `${game["colors"]["red"]}`;
+    }
 }
 
 
@@ -167,9 +203,6 @@ class QuestionAPI
     }
 
     static getQuestions(APIUrl) {
-
-        // console.log(APIUrl);
-
         return fetch(APIUrl)
             .then(res => res.json())
             .then(data => Game.start(data.results));
@@ -188,9 +221,6 @@ class QuestionAPI
 // Initializing page on load
 window.addEventListener("DOMContentLoaded", Init.setUpPage);
 
-// Click event for toggling form
-// formToggler.addEventListener("click", Form.toggleForm);
-
 // Click event for fetching questions
 form.addEventListener("submit", e => {
     e.preventDefault();
@@ -200,8 +230,8 @@ form.addEventListener("submit", e => {
     const APIUrl = QuestionAPI.createAPIUrl(parameters);
 
     const questions = QuestionAPI.getQuestions(APIUrl);
-
-    
 });
+
+
 
 

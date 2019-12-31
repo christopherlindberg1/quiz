@@ -9,7 +9,7 @@ const game = {
         "green" : "#0c0",
         "red" : "#f22",
     }
-}
+};
 
 // UI elements
 const form = document.getElementById("question-form");
@@ -28,8 +28,6 @@ const answersContainer = document.getElementById("answers");
 const timer = document.getElementById("timer");
 
 
-
-// console.log(answers);
 
 
 class Init
@@ -87,25 +85,18 @@ class Game
 
         let questionIndex = 0;
 
-        Game.presentQuestion(questions[questionIndex]);
+        let index = Game.presentQuestion(questions[questionIndex], questionIndex);
     }
 
-    static presentQuestion(question) {
+    static presentQuestion(question, questionIndex) {
         console.log(question);
-
+        const answers = Game.getAlternativeAnswers(question);
         let hasAnswered = false;
-
-        const answers = [question["correct_answer"], ...question["incorrect_answers"]];
-
-        // Randomize order of answers
-        answers.sort(function(a, b) {
-            return 0.5 - Math.random()
-        });
 
         // Start qeustions
         Game.showQuestion(question); 
-        Game.showAlternativeAnswers(answers);  
-        Game.startTimer();
+        Game.showAlternativeAnswers(Game.getAlternativeAnswers(question));
+        const refreshId = Game.startTimer();
 
         answersContainer.addEventListener("click", e => {
             if (e.target.classList.contains("answer")) {
@@ -119,14 +110,27 @@ class Game
                         e.target.style.border = `2px solid ${game["colors"]["red"]}`;
                         e.target.style.backgroundColor = `${game["colors"]["red"]}`;
                     }
+                    hasAnswered = true;
                 }
-                hasAnswered = true;
+                
+                clearInterval(refreshId);
             }
         });
     }
 
     static showQuestion(question) {
         questionText.innerText = question["question"]; 
+    }
+
+    static getAlternativeAnswers(question) {
+        const answers = [question["correct_answer"], ...question["incorrect_answers"]];
+
+        // Randomize order of answers
+        answers.sort(function(a, b) {
+            return 0.5 - Math.random()
+        });
+
+        return answers;
     }
 
     static showAlternativeAnswers(answers) {
@@ -156,6 +160,8 @@ class Game
             }
             timer.innerText = currentTime;
         }, 1000);
+
+        return refreshId;
     }
 }
 

@@ -69,7 +69,7 @@
                     </select>
                 </div>
                 <div class="form-element">
-                    <button type="submit" class="form-input">Start Quiz</button>
+                    <button type="submit" class="form-input btn">Start Quiz</button>
                 </div>
             </form>
         </section>
@@ -79,7 +79,7 @@
                 <div class="question-card">
                     <div class="question-information">
                         <div class="question">
-                            <div class="question-number small-heading">Question 1</div>
+                            <div class="question-number small-heading" id="question-number">Question 1</div>
                             <h3 id="question-text">Which of these games includes the phrase &quot;Do not pass Go, do not collect $200&quot;?</h3>
                         </div>
                         <div class="timer-container">
@@ -98,19 +98,18 @@
 
         <section id="results-section">
             <div id="results-container">
-                <div>Results</div>
+                <div class="small-heading">Results</div>
                 <div class="results-text" id="results-summary">You answered 90% of the questions correct</div>
                 <div class="results-text" id="results-corrects">Correct answers: 9</div>
                 <div class="results-text" id="results-wrongs">Wrong answers: 1</div>
             </div>
             <div id="game-finished-options">
-                <button id="restart-button">Play again</button>
+                <button id="restart-button" class="btn">Play again</button>
             </div>
         </section>
     </main>
 
 
     <script src="js/main.js"></script>
-    <script src="js/config.js"></script>
 </body>
 </html>

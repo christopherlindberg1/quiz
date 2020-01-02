@@ -2,13 +2,9 @@
 // Configuration variables
 const API_URL = "https://opentdb.com/api.php";
 const SECONDS_PER_QUESTION = 30;
-
-// Game variable
-const game = {
-    "colors" : {
-        "green" : "#0c0",
-        "red" : "#f22",
-    }
+const colors = {
+    "green" : "#0c0",
+    "red" : "#f22",
 };
 
 // UI elements
@@ -22,11 +18,16 @@ const inputType = document.getElementById("input-type");
 
 const formSection = document.getElementById("form-section");
 const questionSection = document.getElementById("question-section");
+const questionContainer = document.getElementById("questions-container");
 
 const questionText = document.getElementById("question-text");
 const answersContainer = document.getElementById("answers");
 const timer = document.getElementById("timer");
-
+const resultsSection = document.getElementById("results-section");
+const resultsSummary = document.getElementById("results-summary");
+const resultsCorrects = document.getElementById("results-corrects");
+const resultsWrongs = document.getElementById("results-wrongs");
+const restartButton = document.getElementById("restart-button");
 
 
 
@@ -34,6 +35,7 @@ class Init
 {
     static setUpPage() {
         GameUI.hideQuestionSection();
+        GameUI.hideResultsBox();
     }
 }
 
@@ -59,15 +61,12 @@ class Form
         if (inputNrOfQuestions.value != "") {
            parameters["amount"] = inputNrOfQuestions.value;
         }
-
         if (inputCategory.value != "any") {
             parameters["category"] = inputCategory.value;
         }
-
         if (inputDifficulty.value != "any") {
             parameters["difficulty"] = inputDifficulty.value;
         }
-
         if (inputType.value != "any") {
             parameters["type"] = inputType.value;
         }
@@ -79,18 +78,39 @@ class Form
 
 class Game
 {
-    static start(questions) {
+    static gameData = {
+        "stats" : {
+            "correct" : 0,
+            "wrong" : 0
+        },
+        "questions" : [],
+        "nrOfQuestions" : 0,
+        "nrOfQuestionsAnswered" : 0
+    };
+
+    static init(questions) {
+        Game.resetGameData(questions);
+        Game.startGame(questions);
+    }
+
+    static resetGameData(questions) {
+        Game.gameData.stats["correct"] = 0;
+        Game.gameData.stats["wrong"] = 0;
+        Game.gameData.questions = questions;
+        Game.gameData.nrOfQuestions = questions.length;
+        Game.gameData.nrOfQuestionsAnswered = 0;
+    }
+
+    static startGame(questions) {
+        // let questionsPresented = 1;
+
         Form.hideFormSection();
         GameUI.showQuestionSection();
 
-        let questionIndex = 0;
-
-        let index = Game.presentQuestion(questions[questionIndex], questionIndex);
+        Game.startQuestion(questions[0]);
     }
 
-    static presentQuestion(question, questionIndex) {
-        console.log(question);
-        const answers = Game.getAlternativeAnswers(question);
+    static startQuestion(question) {
         let hasAnswered = false;
 
         // Start qeustions
@@ -103,17 +123,29 @@ class Game
                 if (hasAnswered == false) {
                     const userChoice = e.target.innerText;
                     if (userChoice == question["correct_answer"]) {
-                        e.target.style.border = `2px solid ${game["colors"]["green"]}`;
-                        e.target.style.backgroundColor = `${game["colors"]["green"]}`;
+                        e.target.style.border = `2px solid ${colors["green"]}`;
+                        e.target.style.backgroundColor = `${colors["green"]}`;
+                        Game.gameData.stats["correct"]++;
                     }
                     else {
-                        e.target.style.border = `2px solid ${game["colors"]["red"]}`;
-                        e.target.style.backgroundColor = `${game["colors"]["red"]}`;
+                        e.target.style.border = `2px solid ${colors["red"]}`;
+                        e.target.style.backgroundColor = `${colors["red"]}`;
+                        Game.gameData.stats["wrong"]++;
                     }
+                    clearInterval(refreshId);
                     hasAnswered = true;
+                    Game.gameData.nrOfQuestionsAnswered++;
+
+                    // Wait 1 sec to present next question
+                    setTimeout(() => {
+                        if (Game.gameData.nrOfQuestions > Game.gameData.nrOfQuestionsAnswered) {
+                            Game.startQuestion(Game.gameData.questions[Game.gameData.nrOfQuestionsAnswered]);
+                        }
+                        else {
+                            Game.showResults();
+                        }
+                    }, 1000);
                 }
-                
-                clearInterval(refreshId);
             }
         });
     }
@@ -163,6 +195,18 @@ class Game
 
         return refreshId;
     }
+
+    static showResults() {
+        GameUI.hideQuestionSection();
+        GameUI.updateResultsBox(Game.gameData.stats);
+        GameUI.showResultsBox();
+    }
+
+    static restartGame() {
+        GameUI.hideQuestionSection();
+        GameUI.hideResultsBox();
+        Form.showFormSection();
+    }
 }
 
 
@@ -176,14 +220,29 @@ class GameUI
         questionSection.style.display = "block";
     }
 
+    static hideResultsBox() {
+        resultsSection.style.display = "none";
+    }
+
+    static showResultsBox() {
+        resultsSection.style.display = "block";
+    }
+
     static makeTimerGreen() {
-        timer.style.border = `3px solid ${game["colors"]["green"]}`;
+        timer.style.border = `3px solid ${colors["green"]}`;
         timer.style.backgroundColor = "#f4f4f4";
     }
 
     static makeTimerRed() {
-        timer.style.border = `3px solid ${game["colors"]["red"]}`;
-        timer.style.backgroundColor = `${game["colors"]["red"]}`;
+        timer.style.border = `3px solid ${colors["red"]}`;
+        timer.style.backgroundColor = `${colors["red"]}`;
+    }
+
+    static updateResultsBox(results) {
+        const correctPercentage = 100 * results.correct / (results.correct + results.wrong);
+        resultsSummary.innerText = `You answered ${correctPercentage}% of the questions correct`;
+        resultsCorrects.innerText = `Correct answers: ${results.correct}`;
+        resultsWrongs.innerText = `Wrong answers: ${results.wrong}`; 
     }
 }
 
@@ -211,7 +270,7 @@ class QuestionAPI
     static getQuestions(APIUrl) {
         return fetch(APIUrl)
             .then(res => res.json())
-            .then(data => Game.start(data.results));
+            .then(data => Game.init(data.results));
     }
 }
 
@@ -232,12 +291,11 @@ form.addEventListener("submit", e => {
     e.preventDefault();
 
     const parameters = Form.getParameters();
-
     const APIUrl = QuestionAPI.createAPIUrl(parameters);
-
-    const questions = QuestionAPI.getQuestions(APIUrl);
+    QuestionAPI.getQuestions(APIUrl);
 });
 
-
+// Click event for restarting game
+restartButton.addEventListener("click", Game.restartGame);
 
 

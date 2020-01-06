@@ -10,6 +10,7 @@ const CONFIG = {
 };
 
 // UI elements
+const flashMessage = document.getElementById("flash-message");
 const form = document.getElementById("question-form");
 const formToggler = document.getElementById("form-toggler");
 const formTogglerIcon = document.getElementById("form-toggler-icon");
@@ -100,7 +101,7 @@ class Game
     static init(APIData) {
         // If there aren't as many questions as requested
         if (APIData.response_code == 1) {
-
+            FlashMessage.showMessage("There were not enough questions that matched your search");
         }
         // Different invalid (internal) errors
         if (APIData.response_code >= 2) {
@@ -333,9 +334,19 @@ class GameUI
 }
 
 
-class Error
-{
+class FlashMessage
+{  
+    static showMessage(message) {
+        flashMessage.innerText = message;
+        flashMessage.style.opacity = 1;
+        setTimeout(() => {
+            FlashMessage.hideFlashMessage();
+        }, 3000);
+    }
 
+    static hideFlashMessage() {
+        flashMessage.style.opacity = 0;
+    }
 }
 
 
@@ -355,8 +366,6 @@ class QuestionAPI
         if (parameters["type"] != "any") {
             APIUrl += `&type=${parameters["type"]}`;
         }
-
-        console.log(APIUrl);
 
         return APIUrl;
     }

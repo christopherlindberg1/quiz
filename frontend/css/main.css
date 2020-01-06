@@ -9,6 +9,19 @@ body {
     font-family: "Candara";
 }
 
+#flash-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: cornflowerblue;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 300ms ease-out;
+}
+
 .container {
     max-width: 800px;
     margin: 0 auto;
@@ -17,6 +30,7 @@ body {
 
 .main-heading,
 .secondary-heading {
+    margin-top: 2rem;
     text-align: center;
 }
 

@@ -29,6 +29,48 @@ body {
     font-size: 2rem;
 }
 
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 1rem;
+  }
+  
+  /* Tooltip arrow */
+  .tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+  }
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+
 .intro {
     font-size: 1.2rem;
     text-align: center;
@@ -71,6 +113,27 @@ body {
     box-shadow: 0px 0px 16px #ccc;
     padding: 1rem;
     border-radius: 4px;
+}
+
+.question-card {
+    display: relative;
+}
+
+#exit-btn {
+    position: relative;
+    top: -39px;
+    right: -39px;
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background-color: #f22;
+    display: inline-block;
+    float: right;
+    text-align: center;
+    line-height: 51px;
+    font-size: 2.5rem;
+    color: #ddd;
+    cursor: pointer;
 }
 
 .btn {
@@ -159,8 +222,30 @@ body {
     font-size: 1.1rem;
 }
 
-.progress-bar {
+#progress-bar {
     width: 100%;
-    background-color: red;
-    height: 10px;
+    /* background-color: #f4f4f4; */
+    height: 8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.progress-bar-element {
+    display: inline-block;
+    height: 8px;
+    background-color: #ddd;
+    flex-grow: 1;
+    margin-right: 3px;
+}
+
+.progress-bar-element:last-of-type {
+    margin-right: 0;
+}
+
+.progress-bar-element.green {
+    background-color: #0c0;
+}
+
+.progress-bar-element.red {
+    background-color: #f22;
 }

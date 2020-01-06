@@ -15,7 +15,6 @@
             <div class="intro">
                 <p>Generate questions in the form below and play the interactive quiz game!</p>
             </div>
-            <!-- <h2 id="form-toggler" class="secondary-heading toggler-control">Search qestions <span id="form-toggler-icon" class="toggler-icon">&#10094;</span></h2> -->
             <form id="question-form" class="form">
                 <div class="form-element">
                     <label for="amount" class="form-label">Number of questions: </label>
@@ -77,6 +76,9 @@
         <section id="question-section" class="section">
             <div id="questions-container">
                 <div class="question-card">
+                    <div id="exit-btn" class="tooltip">
+                        &#10006;<span class="tooltiptext">Stop quiz</span>
+                    </div>
                     <div class="question-information">
                         <div class="question">
                             <div class="question-number small-heading" id="question-number">Question 1</div>
@@ -91,6 +93,15 @@
                     </div>
                     <div id="answers">
                         <div class="answer">1</div>
+                    </div>
+                    <div id="progress-bar">
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
+                        <div class="progress-bar-item"></div>
                     </div>
                 </div>
             </div>

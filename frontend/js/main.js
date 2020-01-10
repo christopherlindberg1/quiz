@@ -2,7 +2,8 @@
 // Configuration variables
 const CONFIG = {
     "APIUrl" : "https://opentdb.com/api.php",
-    "secondsPerQuestion" : 30,
+    "secondsPerQuestion" : 6,
+    "delayBetweenQuestions" : 1500,
     "colors" : {
         "green" : "#0c0",
         "red" : "#f22",
@@ -93,6 +94,7 @@ class Game
         "questions" : [],
         "nrOfQuestions" : 0,
         "nrOfQuestionsAnswered" : 0,
+        "questionIsActive" : true,
         "timer" : {
             "timeRemaining" : 0,
         }
@@ -101,7 +103,7 @@ class Game
     static init(APIData) {
         // If there aren't as many questions as requested
         if (APIData.response_code == 1) {
-            FlashMessage.showMessage("There were not enough questions that matched your search");
+            FlashMessage.showMessage("There are not enough questions to match your search.");
         }
         // Different invalid (internal) errors
         if (APIData.response_code >= 2) {
@@ -140,7 +142,7 @@ class Game
     }
 
     static startQuestion(question) {
-        let hasAnswered = false;
+        Game.gameData.questionIsActive = true;
 
         // Start qeustions
         Game.showQuestion(question); 
@@ -151,18 +153,24 @@ class Game
         const checkForZero = setInterval(() => {
             if (Game.gameData.timer.timeRemaining == 0) {
                 clearInterval(checkForZero);
+                clearInterval(refreshId);
+
+                GameUI.updateProgressBar(Game.gameData.nrOfQuestionsAnswered, "wrong");
                 Game.gameData.nrOfQuestionsAnswered++;
                 Game.gameData.stats["wrong"]++;
                 GameUI.makeAnswersRed();
                 setTimeout(() => {
                     Game.checkForNextQuestion();
-                }, 1000);
+                }, CONFIG.delayBetweenQuestions);
             }
         }, 1000);
 
         answersContainer.addEventListener("click", e => {
             if (e.target.classList.contains("answer")) {
-                if (hasAnswered == false) {
+                clearInterval(checkForZero);
+                clearInterval(refreshId);
+
+                if (Game.gameData.questionIsActive == true) {
                     const userChoice = e.target.innerHTML;
                     if (userChoice == question["correct_answer"]) {
                         e.target.style.border = `2px solid ${CONFIG.colors.green}`;
@@ -176,14 +184,14 @@ class Game
                         Game.gameData.stats.wrong++;
                         GameUI.updateProgressBar(Game.gameData.nrOfQuestionsAnswered, "wrong");
                     }
-                    clearInterval(refreshId);
-                    hasAnswered = true;
+                    
+                    Game.gameData.questionIsActive = false;
                     Game.gameData.nrOfQuestionsAnswered++;
                     
                     // Wait 1 sec before presenting next question
                     setTimeout(() => {
                         Game.checkForNextQuestion();
-                    }, 1000);
+                    }, CONFIG.delayBetweenQuestions);
                 }
             }
         });
@@ -210,7 +218,7 @@ class Game
 
         answers.forEach(answer => {
             const answerDiv = document.createElement("div");
-            answerDiv.appendChild(document.createTextNode(answer));
+            answerDiv.innerHTML = answer;
             answerDiv.classList.add("answer");
             answersContainer.appendChild(answerDiv);
         });
@@ -283,6 +291,7 @@ class GameUI
     static makeAnswersRed() {
         document.querySelectorAll(".answer").forEach(answer => {
             answer.style.backgroundColor = CONFIG.colors.red;
+            answer.style.border = `3px solid ${CONFIG.colors.red}`;
         })
     }
 
@@ -296,9 +305,9 @@ class GameUI
 
     static updateResultsBox(results) {
         const correctPercentage = 100 * results.correct / (results.correct + results.wrong);
-        resultsSummary.innerHTML = `You answered ${correctPercentage.toFixed(2)}% of the questions correct`;
-        resultsCorrects.innerHTML = `Correct answers: ${results.correct}`;
-        resultsWrongs.innerHTML = `Wrong answers: ${results.wrong}`; 
+        resultsSummary.innerHTML = `You answered ${correctPercentage.toFixed(2)}% of the questions correct (${results.correct}/${Game.gameData.nrOfQuestions})`;
+        // resultsCorrects.innerHTML = `Correct answers: ${results.correct}`;
+        // resultsWrongs.innerHTML = `Wrong answers: ${results.wrong}`; 
     }
 
     static createProgressBar(nrOfQuestions) {
@@ -329,7 +338,6 @@ class GameUI
             }
         }
         catch (ex) {}
-        
     }
 }
 
@@ -341,7 +349,7 @@ class FlashMessage
         flashMessage.style.opacity = 1;
         setTimeout(() => {
             FlashMessage.hideFlashMessage();
-        }, 3000);
+        }, 4000);
     }
 
     static hideFlashMessage() {
@@ -402,4 +410,4 @@ form.addEventListener("submit", e => {
 restartButton.addEventListener("click", Game.restartGame);
 
 // Click event for stopping game
-exitBtn.addEventListener("click", Game.restartGame);
+// exitBtn.addEventListener("click", Game.restartGame);

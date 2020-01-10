@@ -2,7 +2,7 @@
 // Configuration variables
 const CONFIG = {
     "APIUrl" : "https://opentdb.com/api.php",
-    "secondsPerQuestion" : 6,
+    "secondsPerQuestion" : 20,
     "delayBetweenQuestions" : 1500,
     "colors" : {
         "green" : "#0c0",
@@ -13,6 +13,7 @@ const CONFIG = {
 // UI elements
 const flashMessage = document.getElementById("flash-message");
 const form = document.getElementById("question-form");
+const startBtn = document.getElementById("start-btn");
 const formToggler = document.getElementById("form-toggler");
 const formTogglerIcon = document.getElementById("form-toggler-icon");
 const inputNrOfQuestions = document.getElementById("input-amount"); 
@@ -32,8 +33,6 @@ const timer = document.getElementById("timer");
 const progressBar = document.getElementById("progress-bar");
 const resultsSection = document.getElementById("results-section");
 const resultsSummary = document.getElementById("results-summary");
-const resultsCorrects = document.getElementById("results-corrects");
-const resultsWrongs = document.getElementById("results-wrongs");
 const restartButton = document.getElementById("restart-button");
 
 
@@ -92,6 +91,7 @@ class Game
             "wrong" : 0
         },
         "questions" : [],
+        "currentQuestion" : {},
         "nrOfQuestions" : 0,
         "nrOfQuestionsAnswered" : 0,
         "questionIsActive" : true,
@@ -115,13 +115,13 @@ class Game
             Game.initializeGameData(questions);
             Game.startGame(questions);
         }
-        
     }
 
     static initializeGameData(questions) {
         Game.gameData.stats["correct"] = 0;
         Game.gameData.stats["wrong"] = 0;
         Game.gameData.questions = questions;
+        Game.gameData.currentQuestion = questions[0];
         Game.gameData.nrOfQuestions = questions.length;
         Game.gameData.nrOfQuestionsAnswered = 0;
     }
@@ -130,6 +130,7 @@ class Game
         Game.gameData.stats["correct"] = 0;
         Game.gameData.stats["wrong"] = 0;
         Game.gameData.questions = [];
+        Game.gameData.currentQuestion = {};
         Game.gameData.nrOfQuestions = 0;
         Game.gameData.nrOfQuestionsAnswered = 0;
     }
@@ -137,11 +138,12 @@ class Game
     static startGame(questions) {
         Form.hideFormSection();
         GameUI.showQuestionSection();
-        Game.startQuestion(questions[0]);
+        Game.startQuestion(Game.gameData.currentQuestion);
         GameUI.createProgressBar(Game.gameData.nrOfQuestions);
     }
 
     static startQuestion(question) {
+        Game.gameData.currentQuestion = question;
         Game.gameData.questionIsActive = true;
 
         // Start qeustions
@@ -172,7 +174,8 @@ class Game
 
                 if (Game.gameData.questionIsActive == true) {
                     const userChoice = e.target.innerHTML;
-                    if (userChoice == question["correct_answer"]) {
+
+                    if (userChoice == Game.gameData.currentQuestion.correct_answer) {
                         e.target.style.border = `2px solid ${CONFIG.colors.green}`;
                         e.target.style.backgroundColor = `${CONFIG.colors.green}`;
                         Game.gameData.stats.correct++;
@@ -292,7 +295,7 @@ class GameUI
         document.querySelectorAll(".answer").forEach(answer => {
             answer.style.backgroundColor = CONFIG.colors.red;
             answer.style.border = `3px solid ${CONFIG.colors.red}`;
-        })
+        });
     }
 
     static hideResultsBox() {
@@ -306,8 +309,6 @@ class GameUI
     static updateResultsBox(results) {
         const correctPercentage = 100 * results.correct / (results.correct + results.wrong);
         resultsSummary.innerHTML = `You answered ${correctPercentage.toFixed(2)}% of the questions correct (${results.correct}/${Game.gameData.nrOfQuestions})`;
-        // resultsCorrects.innerHTML = `Correct answers: ${results.correct}`;
-        // resultsWrongs.innerHTML = `Wrong answers: ${results.wrong}`; 
     }
 
     static createProgressBar(nrOfQuestions) {
@@ -379,7 +380,7 @@ class QuestionAPI
     }
 
     static getQuestions(APIUrl) {
-        return fetch(APIUrl)
+        fetch(APIUrl)
             .then(res => res.json())
             .then(data => Game.init(data))
     }
@@ -398,7 +399,7 @@ class QuestionAPI
 window.addEventListener("DOMContentLoaded", Init.setUpPage);
 
 // Click event for fetching questions
-form.addEventListener("submit", e => {
+startBtn.addEventListener("click", e => {
     e.preventDefault();
 
     const parameters = Form.getParameters();

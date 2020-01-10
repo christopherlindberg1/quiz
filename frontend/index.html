@@ -10,7 +10,7 @@
 </head>
 <body>
     <main class="container">
-        <div id="flash-message">This is a message</div>
+        <div id="flash-message"></div>
 
         <h1 class="main-heading">The Quiz</h1>
         <section id="form-section" class="section">
@@ -70,7 +70,7 @@
                     </select>
                 </div>
                 <div class="form-element">
-                    <button type="submit" class="form-input btn">Start Quiz</button>
+                    <button type="submit" id="start-btn" class="form-input btn">Start Quiz</button>
                 </div>
             </form>
         </section>
@@ -107,8 +107,6 @@
             <div id="results-container">
                 <div class="small-heading">Results</div>
                 <div class="results-text" id="results-summary">You answered 90% of the questions correct (9/10)</div>
-                <!-- <div class="results-text" id="results-corrects">Correct answers: 9</div> -->
-                <!-- <div class="results-text" id="results-wrongs">Wrong answers: 1</div> -->
             </div>
             <div id="game-finished-options">
                 <button id="restart-button" class="btn">Play again</button>

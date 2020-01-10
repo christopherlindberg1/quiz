@@ -12,10 +12,13 @@ const CONFIG = {
 
 // UI elements
 const flashMessage = document.getElementById("flash-message");
-const form = document.getElementById("question-form");
+const dialogMessageContainer = document.getElementById("dialog-message-container");
+const dialogMessageHeading = document.getElementById("dialog-message-heading");
+const dialogMessageText = document.getElementById("dialog-message-text");
+const dialogMessageOkBtn = document.getElementById("dialog-message-ok-btn");
+const dialogMessageCancelBtn = document.getElementById("dialog-message-cancel-btn");
+
 const startBtn = document.getElementById("start-btn");
-const formToggler = document.getElementById("form-toggler");
-const formTogglerIcon = document.getElementById("form-toggler-icon");
 const inputNrOfQuestions = document.getElementById("input-amount"); 
 const inputCategory = document.getElementById("input-category"); 
 const inputDifficulty = document.getElementById("input-difficulty"); 
@@ -42,6 +45,104 @@ class Init
     static setUpPage() {
         GameUI.hideQuestionSection();
         GameUI.hideResultsBox();
+    }
+}
+
+
+/*
+  Handles error messages
+*/
+class Error
+{
+    static errors = [];
+
+    static addErrorMessage(message) {
+        this.errors.push(message);
+    }
+
+    static showErrorMessage() {
+        if (this.errors.length == 0) {
+            return;
+        }
+
+        let errorMessage = "";
+        this.errors.forEach((message, index) => {
+            errorMessage += (message + "\n"); 
+        });
+
+        FlashMessage.showMessage(errorMessage);
+        Error.clearErrorList();
+    }
+
+    static clearErrorList() {
+        this.errors = [];
+    }
+}
+
+/*
+  Class for handling flash messages displayed at the top of the screen.
+  Fades away after a certain amount of time.
+*/
+class FlashMessage
+{  
+    static data = {
+        "timeoutId" : 0,
+        "duration" : 4000,
+    }
+
+    static showMessage(message) {
+        clearTimeout(FlashMessage.data.timeoutId);
+
+        flashMessage.innerText = message;
+        flashMessage.style.opacity = 1;
+        FlashMessage.data.timeoutId = setTimeout(() => {
+            FlashMessage.hideFlashMessage();
+        }, FlashMessage.data.duration);
+    }
+
+    static hideFlashMessage() {
+        flashMessage.style.opacity = 0;
+    }
+}
+
+/*
+  Class for handling dialog messages
+*/ 
+class DialogMessage
+{
+    static data = {
+        "active" : false,
+        "callback" : null,
+    }
+
+    static showDialogMessage(heading, text, callback) {
+        DialogMessage.data.active = true;
+        DialogMessage.data.callback = callback;
+
+        dialogMessageHeading.innerText = heading;
+        dialogMessageText.innerText = text;
+        dialogMessageContainer.style.display = "flex";
+    }
+
+    static closeDialogMessage() {
+        dialogMessageContainer.style.display = "none";
+        DialogMessage.data.active = false;
+    }
+
+    static handleKeyInput(e) {
+        if (DialogMessage.data.active == false) {
+            return;
+        }
+
+        // Esc key
+        if (e.keyCode == 27) {
+            DialogMessage.closeDialogMessage();
+        }
+        // Enter key
+        else if (e.keyCode == 13) {
+            DialogMessage.data.callback();
+            DialogMessage.closeDialogMessage();
+        }
     }
 }
 
@@ -79,9 +180,29 @@ class Form
 
         return parameters;
     }
+
+    /*
+      Returns boolean showing if input validated or not
+    */
+    static validateInput(parameters) {
+        let inputOk = true;
+
+        if (parameters.amount < 1) {
+            Error.addErrorMessage("You must have at least 1 question.");
+            inputOk = false;
+        }
+        else if (parameters.amount > 50) {
+            Error.addErrorMessage("You cannot have more than 50 questions.");
+            inputOk = false;
+        }
+
+        return inputOk;
+    }
 }
 
-
+/*
+  Main class for controlling the game
+*/
 class Game
 {
     // Stores data about the game to keep track of the state
@@ -95,11 +216,16 @@ class Game
         "nrOfQuestions" : 0,
         "nrOfQuestionsAnswered" : 0,
         "questionIsActive" : true,
-        "timer" : {
-            "timeRemaining" : 0,
-        }
+        "timeRemaining" : 0,
+        "timerIntervalsIds" : {
+            "countDown" : 0,
+            "checkForZero" : 0,
+        },
     };
 
+    /*
+      Starts the game with data passed in (fetched from API).
+    */
     static init(APIData) {
         // If there aren't as many questions as requested
         if (APIData.response_code == 1) {
@@ -117,6 +243,9 @@ class Game
         }
     }
 
+    /*
+      Initializes the game data to the data fetched from the API.
+    */
     static initializeGameData(questions) {
         Game.gameData.stats["correct"] = 0;
         Game.gameData.stats["wrong"] = 0;
@@ -126,6 +255,9 @@ class Game
         Game.gameData.nrOfQuestionsAnswered = 0;
     }
 
+    /*
+      Resets the game data
+    */
     static resetGameData() {
         Game.gameData.stats["correct"] = 0;
         Game.gameData.stats["wrong"] = 0;
@@ -142,6 +274,10 @@ class Game
         GameUI.createProgressBar(Game.gameData.nrOfQuestions);
     }
 
+    /*
+      Starts a question and handles the answer.
+      This function is recursive and calls itself if there are more questions.
+    */
     static startQuestion(question) {
         Game.gameData.currentQuestion = question;
         Game.gameData.questionIsActive = true;
@@ -149,13 +285,14 @@ class Game
         // Start qeustions
         Game.showQuestion(question); 
         Game.showAlternativeAnswers(Game.getAlternativeAnswers(question));
-        const refreshId = Game.startTimer();
+        Game.gameData.timerIntervalsIds.countDown = Game.startTimer();
 
         // Disable answer options if timer reaches zero
-        const checkForZero = setInterval(() => {
-            if (Game.gameData.timer.timeRemaining == 0) {
-                clearInterval(checkForZero);
-                clearInterval(refreshId);
+        Game.gameData.timerIntervalsIds.checkForZero = setInterval(() => {
+            if (Game.gameData.timeRemaining == 0) {
+                Game.resetTimer();
+                // clearInterval(Game.gameData.timerIntervalsIds.countDown);
+                // clearInterval(Game.gameData.timerIntervalsIds.checkForZero);
 
                 GameUI.updateProgressBar(Game.gameData.nrOfQuestionsAnswered, "wrong");
                 Game.gameData.nrOfQuestionsAnswered++;
@@ -169,8 +306,9 @@ class Game
 
         answersContainer.addEventListener("click", e => {
             if (e.target.classList.contains("answer")) {
-                clearInterval(checkForZero);
-                clearInterval(refreshId);
+                Game.resetTimer();
+                // clearInterval(Game.gameData.timerIntervalsIds.countDown);
+                // clearInterval(Game.gameData.timerIntervalsIds.checkForZero);
 
                 if (Game.gameData.questionIsActive == true) {
                     const userChoice = e.target.innerHTML;
@@ -205,6 +343,9 @@ class Game
         questionText.innerHTML = question["question"]; 
     }
 
+    /*
+      Returns an array with all alternative answers for a question.
+    */
     static getAlternativeAnswers(question) {
         const answers = [question["correct_answer"], ...question["incorrect_answers"]];
 
@@ -227,27 +368,41 @@ class Game
         });
     }
 
+    /*
+      Starts the timer that keeps track of the time for each question.
+    */
     static startTimer() {
         GameUI.makeTimerGreen();
-        Game.gameData.timer.timeRemaining = CONFIG.secondsPerQuestion;
+        Game.gameData.timeRemaining = CONFIG.secondsPerQuestion;
 
         // let currentTime = SECONDS_PER_QUESTION;
-        timer.innerHTML = Game.gameData.timer.timeRemaining;
+        timer.innerHTML = Game.gameData.timeRemaining;
 
         const refreshId = setInterval(() => {
-            Game.gameData.timer.timeRemaining--;
-            if (Game.gameData.timer.timeRemaining == 0) {
+            Game.gameData.timeRemaining--;
+            if (Game.gameData.timeRemaining == 0) {
                 clearInterval(refreshId);
             }
-            if (Game.gameData.timer.timeRemaining == 5) {
+            if (Game.gameData.timeRemaining == 5) {
                 GameUI.makeTimerRed();
             }
-            timer.innerHTML = Game.gameData.timer.timeRemaining;
+            timer.innerHTML = Game.gameData.timeRemaining;
         }, 1000);
 
         return refreshId;
     }
 
+    /*
+      Clears all timeIntervals that has been set.
+    */
+    static resetTimer() {
+        clearInterval(Game.gameData.timerIntervalsIds.countDown);
+        clearInterval(Game.gameData.timerIntervalsIds.checkForZero);
+    }
+
+    /*
+      Using the stored game data to check if there are more questions to be answered.
+    */
     static checkForNextQuestion() {
         if (Game.gameData.nrOfQuestions > Game.gameData.nrOfQuestionsAnswered) {
             Game.startQuestion(Game.gameData.questions[Game.gameData.nrOfQuestionsAnswered]);
@@ -264,13 +419,25 @@ class Game
     }
 
     static restartGame() {
+        Game.resetTimer();
         GameUI.hideQuestionSection();
         GameUI.hideResultsBox();
         Form.showFormSection();
     }
+
+    /*
+      Method for restarting / stopping the game if the user
+      confirms their choice in a dialoge box.
+    */
+    static confirmStopGame() {
+        DialogMessage.showDialogMessage("Caution", "Are you sure you want to stop the game?", Game.restartGame);
+    }
 }
 
 
+/*
+  Class used to handle game activities that only has to do with the UI.
+*/
 class GameUI
 {
     static hideQuestionSection() {
@@ -291,6 +458,9 @@ class GameUI
         timer.style.backgroundColor = `${CONFIG.colors.red}`;
     }
 
+    /*
+      Gives all answer boxes a red background color and red border.
+    */
     static makeAnswersRed() {
         document.querySelectorAll(".answer").forEach(answer => {
             answer.style.backgroundColor = CONFIG.colors.red;
@@ -306,11 +476,18 @@ class GameUI
         resultsSection.style.display = "block";
     }
 
+    /*
+      Changes the text content in the results box based on how the user
+      performed on the quiz.
+    */
     static updateResultsBox(results) {
         const correctPercentage = 100 * results.correct / (results.correct + results.wrong);
-        resultsSummary.innerHTML = `You answered ${correctPercentage.toFixed(2)}% of the questions correct (${results.correct}/${Game.gameData.nrOfQuestions})`;
+        resultsSummary.innerHTML = `You answered ${correctPercentage.toFixed()}% of the questions correct (${results.correct}/${Game.gameData.nrOfQuestions})`;
     }
 
+    /*
+      Creates a progressbar based on how many questions there are.
+    */
     static createProgressBar(nrOfQuestions) {
         progressBar.innerHTML = "";
 
@@ -343,22 +520,9 @@ class GameUI
 }
 
 
-class FlashMessage
-{  
-    static showMessage(message) {
-        flashMessage.innerText = message;
-        flashMessage.style.opacity = 1;
-        setTimeout(() => {
-            FlashMessage.hideFlashMessage();
-        }, 4000);
-    }
-
-    static hideFlashMessage() {
-        flashMessage.style.opacity = 0;
-    }
-}
-
-
+/*
+  Class used to handle API-related activities
+*/
 class QuestionAPI
 {
     static createAPIUrl(parameters) {
@@ -403,12 +567,35 @@ startBtn.addEventListener("click", e => {
     e.preventDefault();
 
     const parameters = Form.getParameters();
-    const APIUrl = QuestionAPI.createAPIUrl(parameters);
-    QuestionAPI.getQuestions(APIUrl);
+    
+    // Validate input
+    if (Form.validateInput(parameters)) {
+        const APIUrl = QuestionAPI.createAPIUrl(parameters);
+        QuestionAPI.getQuestions(APIUrl);
+    }
+    else {
+        Error.showErrorMessage();
+    }
 });
 
 // Click event for restarting game
 restartButton.addEventListener("click", Game.restartGame);
 
 // Click event for stopping game
-// exitBtn.addEventListener("click", Game.restartGame);
+exitBtn.addEventListener("click", Game.confirmStopGame);
+
+// Click event for dialog box ok btn
+dialogMessageOkBtn.addEventListener("click", () => {
+    DialogMessage.data.callback();
+    DialogMessage.closeDialogMessage();
+});
+
+// Click event for dialog box cancel btn
+dialogMessageCancelBtn.addEventListener("click", () => {
+    DialogMessage.closeDialogMessage();
+});
+
+// Global keyup event. Runs all methods that should be ran when a user uses a key
+document.body.addEventListener("keyup", e => {
+    DialogMessage.handleKeyInput(e);
+});

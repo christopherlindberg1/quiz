@@ -10,7 +10,20 @@
 </head>
 <body>
     <main class="container">
+        <!-- Container for flash messages -->
         <div id="flash-message"></div>
+
+        <!-- Container for dialog messages -->
+        <div id="dialog-message-container">
+            <div id="dialog-message">
+                <p id="dialog-message-heading">Caution</p>
+                <p id="dialog-message-text">Are you sure</p>
+                <div id="dialog-message-btns">
+                    <span id="dialog-message-ok-btn" class="btn btn-dialog">OK</span>
+                    <span id="dialog-message-cancel-btn" class="btn btn-dialog">Cancel</span>
+                </div>
+            </div>
+        </div>
 
         <h1 class="main-heading">The Quiz</h1>
         <section id="form-section" class="section">
@@ -78,11 +91,9 @@
         <section id="question-section" class="section">
             <div id="questions-container">
                 <div class="question-card">
-                    <!-- 
                     <div id="exit-btn" class="tooltip">
                         &#10006;<span class="tooltiptext">Stop quiz</span>
                     </div>
-                    -->
                     <div class="question-information">
                         <div class="question">
                             <div class="question-number small-heading" id="question-number">Question 1</div>
